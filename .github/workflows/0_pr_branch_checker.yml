@@ -9,6 +9,9 @@ on:
       - staging
       - dev
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   validate-pr:
     runs-on: ubuntu-latest
@@ -18,7 +21,9 @@ jobs:
         run: |
           SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           if [[ "$SOURCE_BRANCH" != "staging" && "$SOURCE_BRANCH" != hot-fix/* ]]; then
-            echo "Pull requests to 'main' must come from 'staging' or 'hot-fix/*' branches."
+            ERROR_MESSAGE="❌ Pull requests to 'main' must come from 'staging' or 'hot-fix/*' branches."
+            echo $ERROR_MESSAGE
+            gh pr comment ${{ github.event.number }} --body $ERROR_MESSAGE
             exit 1
           fi
 
@@ -26,8 +31,10 @@ jobs:
         if: github.event.pull_request.base.ref == 'staging'
         run: |
           SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
-          if [[ "$SOURCE_BRANCH" != "dev" ]]; then
-            echo "Pull requests to 'staging' must come from 'dev' branch."
+          if [[ "$SOURCE_BRANCH" != "dev" && "$SOURCE_BRANCH" != hot-fix/* && "$SOURCE_BRANCH" != bug-fix/* ]]; then
+            ERROR_MESSAGE="❌ Pull requests to 'staging' must come from 'dev', 'hot-fix/*' or 'bug-fix/*' branches."
+            echo $ERROR_MESSAGE
+            gh pr comment ${{ github.event.number }} --body $ERROR_MESSAGE
             exit 1
           fi
 
@@ -36,6 +43,8 @@ jobs:
         run: |
           SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           if [[ "$SOURCE_BRANCH" != feature/* && "$SOURCE_BRANCH" != hot-fix/* && "$SOURCE_BRANCH" != bug-fix/* ]]; then
-            echo "Pull requests to 'dev' must come from 'feature/*', 'hot-fix/*', or 'bug-fix/*' branches."
+            ERROR_MESSAGE="❌ Pull requests to 'dev' must come from 'feature/*', 'hot-fix/*', or 'bug-fix/*' branches."
+            echo $ERROR_MESSAGE
+            gh pr comment ${{ github.event.number }} --body $ERROR_MESSAGE
             exit 1
           fi
