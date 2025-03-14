@@ -16,6 +16,10 @@ jobs:
   validate-pr:
     runs-on: ubuntu-latest
     steps:
+      # Needs to checkout to run gh cli commands
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Check source branch for main
         if: github.event.pull_request.base.ref == 'main'
         run: |
@@ -25,6 +29,9 @@ jobs:
             echo $ERROR_MESSAGE
             gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
+          else
+            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge."
+            gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
 
       - name: Check source branch for staging
@@ -36,6 +43,9 @@ jobs:
             echo $ERROR_MESSAGE
             gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
+          else
+            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge."
+            gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
 
       - name: Check source branch for dev
@@ -47,4 +57,7 @@ jobs:
             echo $ERROR_MESSAGE
             gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
+          else
+            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge."
+            gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
