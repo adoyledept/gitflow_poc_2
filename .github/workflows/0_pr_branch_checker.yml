@@ -23,7 +23,7 @@ jobs:
           if [[ "$SOURCE_BRANCH" != "staging" && "$SOURCE_BRANCH" != hot-fix/* ]]; then
             ERROR_MESSAGE="❌ Pull requests to 'main' must come from 'staging' or 'hot-fix/*' branches."
             echo $ERROR_MESSAGE
-            gh pr comment ${{ github.event.number }} --body $ERROR_MESSAGE
+            gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
           fi
 
@@ -34,7 +34,7 @@ jobs:
           if [[ "$SOURCE_BRANCH" != "dev" && "$SOURCE_BRANCH" != hot-fix/* && "$SOURCE_BRANCH" != bug-fix/* ]]; then
             ERROR_MESSAGE="❌ Pull requests to 'staging' must come from 'dev', 'hot-fix/*' or 'bug-fix/*' branches."
             echo $ERROR_MESSAGE
-            gh pr comment ${{ github.event.number }} --body $ERROR_MESSAGE
+            gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
           fi
 
@@ -45,6 +45,6 @@ jobs:
           if [[ "$SOURCE_BRANCH" != feature/* && "$SOURCE_BRANCH" != hot-fix/* && "$SOURCE_BRANCH" != bug-fix/* ]]; then
             ERROR_MESSAGE="❌ Pull requests to 'dev' must come from 'feature/*', 'hot-fix/*', or 'bug-fix/*' branches."
             echo $ERROR_MESSAGE
-            gh pr comment ${{ github.event.number }} --body $ERROR_MESSAGE
+            gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
           fi
