@@ -1,0 +1,65 @@
+name: Production Merge Workflow
+run-name: Publish release, tag image, deploy to prod
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '.github/**'
+    branches:
+      - main
+
+# Future edit - here we want to string together several workflow jobs so that jobs appear in the same workflow run
+# build_image -> auto_deploy -> create_staging_pr
+# the above workflows need to be altered to on:workflow_call
+jobs:
+  publish_release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    outputs: 
+      release_tag: ${{ steps.create_draft_release.outputs.RELEASE_TAG }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      
+      # This grep command looks for the first instance of a version tag with the assumption that the first instance
+      # represents the version of the project itself rather than a dependency version.
+      # Note that the `-P` flag in the piped `grep` call is specific to the version that is available on the ubuntu-latest
+      # runners, which is different than what is generally available by default on OSX, which uses `-e`. 
+      - name: Extract version tag from pyproject.toml
+        run: |-
+          echo "PYPROJECT_VERSION=$(grep -m 1 version pyproject.toml | grep -P '\d.\d.\d' -o)" >> $GITHUB_ENV
+      
+      # https://cli.github.com/manual/gh_release
+      - name: Create draft release via CLI
+        id: create_draft_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          gh release edit "v${PYPROJECT_VERSION}-rc" \
+            --title "v${PYPROJECT_VERSION}" \
+            --tag "v${PYPROJECT_VERSION}" \
+            --draft=false \
+            --prerelease=false \
+            --latest
+          echo "RELEASE_TAG=v${PYPROJECT_VERSION}" >> $GITHUB_OUTPUT
+
+  tag_published_image:
+    name: Tag Published Image
+    needs: ["publish_release"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mock build run
+        run: echo "The image for ${{ needs.publish_release.outputs.release_tag }} has been tagged!"
+  
+  deploy_to_production:
+    needs: [
+      "publish_release",
+      "tag_published_image"
+    ]
+    uses: ./.github/workflows/0_gke_deploy_workflow.yml
+    with:
+      environment: prod
+      image_tag: "${{ needs.publish_release.outputs.release_tag }}"
+

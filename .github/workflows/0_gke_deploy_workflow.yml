@@ -1,0 +1,33 @@
+name: Deploy to GKE Environment
+run-name: Deploy ${{ inputs.image_tag }} to ${{ inputs.environment }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "The release tag to deploy - can be short sha, or release tag - https://github.com/Raybeam/greenhouse_content_hub/releases"
+        type: string
+        required: true
+      environment: 
+        description: The deploy environment.
+        type: environment
+        required: true
+        default: dev
+  workflow_call:
+    inputs:
+      image_tag:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+
+jobs:
+  setup-auth-deploy:
+    name: Setup and Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+    - name: Mock deployment
+      run: echo "The ${{ inputs.image_tag }} has been deployed to ${{ inputs.environment }}"

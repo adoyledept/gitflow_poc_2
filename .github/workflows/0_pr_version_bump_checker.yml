@@ -1,0 +1,39 @@
+name: Check PR Version Bump
+on:
+  repository_dispatch:
+    types: [create-pull-request]
+  pull_request:
+    branches:
+      - production
+      - staging
+
+jobs:
+  version_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get latest release version
+        id: get_latest_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_RELEASE=$(gh release view --json tagName -q .tagName)
+          # Strip the 'v' prefix if it exists
+          LATEST_RELEASE_STRIPPED=${LATEST_RELEASE#v}
+          echo "LATEST_RELEASE_STRIPPED=$LATEST_RELEASE_STRIPPED" >> $GITHUB_ENV
+
+      - name: Extract version from pyproject.toml
+        id: extract_version
+        run: |
+          echo "PYPROJECT_VERSION=$(grep -m 1 version pyproject.toml | grep -P '\d.\d.\d' -o)" >> $GITHUB_ENV
+
+      - name: Compare versions
+        run: |
+          if [ "$LATEST_RELEASE_STRIPPED" = "$PYPROJECT_VERSION" ]; then
+            "Warning: version match - latest release is $LATEST_RELEASE_STRIPPED and pyproject version is $PYPROJECT_VERSION - please bump version in pyproject and commit."
+            exit 1
+          else
+            echo "Versions do not match."
+          fi

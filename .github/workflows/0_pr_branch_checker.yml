@@ -1,0 +1,41 @@
+name: Validate Pull Request
+
+on:
+  repository_dispatch:
+    types: [create-pull-request]
+  pull_request:
+    branches:
+      - main
+      - staging
+      - dev
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch for main
+        if: github.event.pull_request.base.ref == 'main'
+        run: |
+          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+          if [[ "$SOURCE_BRANCH" != "staging" && "$SOURCE_BRANCH" != hot-fix/* ]]; then
+            echo "Pull requests to 'main' must come from 'staging' or 'hot-fix/*' branches."
+            exit 1
+          fi
+
+      - name: Check source branch for staging
+        if: github.event.pull_request.base.ref == 'staging'
+        run: |
+          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+          if [[ "$SOURCE_BRANCH" != "dev" ]]; then
+            echo "Pull requests to 'staging' must come from 'dev' branch."
+            exit 1
+          fi
+
+      - name: Check source branch for dev
+        if: github.event.pull_request.base.ref == 'dev'
+        run: |
+          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+          if [[ "$SOURCE_BRANCH" != feature/* && "$SOURCE_BRANCH" != hot-fix/* && "$SOURCE_BRANCH" != bug-fix/* ]]; then
+            echo "Pull requests to 'dev' must come from 'feature/*', 'hot-fix/*', or 'bug-fix/*' branches."
+            exit 1
+          fi

@@ -1,0 +1,66 @@
+name: Develop Merge Workflow
+run-name: Build image, deploy to dev, and create staging PR
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '.github/**'
+    branches:
+      - dev
+
+# Future edit - here we want to string together several workflow jobs so that jobs appear in the same workflow run
+# build_image -> auto_deploy -> create_staging_pr
+# the above workflows need to be altered to on:workflow_call
+jobs:
+  build_base_image:
+    name: Build Base Image
+    runs-on: ubuntu-latest
+    outputs: 
+        short-sha: ${{ steps.get-short-sha.outputs.SHORT_SHA }}
+    steps:
+      - name: Get short sha from triggering commit
+        id: get-short-sha
+        run: |-
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+      
+      - name: Mock build run
+        run: echo "The image for $SHORT_SHA has been built!"
+  
+  deploy_to_dev:
+    name: Deploy to Dev
+    needs: ["build_base_image"]
+    uses: ./.github/workflows/0_gke_deploy_workflow.yml
+    with:
+      environment: dev
+      image_tag: "${{ needs.build_base_image.outputs.short-sha }}"
+
+  create_staging_pr:
+    name: Check and Create Staging PR
+    needs: ["deploy_to_dev"]
+    runs-on: ubuntu-latest
+  
+    steps:
+      - uses: actions/checkout@v4
+            
+      # https://cli.github.com/manual/gh_pr
+      - name: Create Standard Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash {0}
+        run: |-
+          output=$(gh pr create --base staging --head dev --title 'Auto PR' --body 'Auto PR test' 2>&1)
+          status=$?
+
+          if [ $status -ne 0 ]; then
+            if echo "$output" | grep -q "https://github.com/"; then
+              echo "$output"
+              exit 0
+            else
+              echo "$output"
+              exit $status
+            fi
+          else
+            echo "$output"
+          fi

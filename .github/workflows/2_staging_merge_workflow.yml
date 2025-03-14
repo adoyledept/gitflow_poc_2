@@ -1,0 +1,92 @@
+name: Staging Merge Workflow
+run-name: Create release candidate, tag image, deploy to staging, create prod PR
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '.github/**'
+    branches:
+      - staging
+
+# Future edit - here we want to string together several workflow jobs so that jobs appear in the same workflow run
+# build_image -> auto_deploy -> create_staging_pr
+# the above workflows need to be altered to on:workflow_call
+jobs:
+  create_draft_release:
+    name: Create Draft Release
+    runs-on: ubuntu-latest
+    outputs: 
+      draft_release_tag: ${{ steps.create_draft_release.outputs.DRAFT_RELEASE_TAG }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+      
+      # This grep command looks for the first instance of a version tag with the assumption that the first instance
+      # represents the version of the project itself rather than a dependency version.
+      # Note that the `-P` flag in the piped `grep` call is specific to the version that is available on the ubuntu-latest
+      # runners, which is different than what is generally available by default on OSX, which uses `-e`. 
+      - name: Extract version tag from pyproject.toml
+        id: get_pyproject_tag
+        run: |-
+          echo "PYPROJECT_VERSION=$(grep -m 1 version pyproject.toml | grep -P '\d.\d.\d' -o)" >> $GITHUB_ENV
+      
+      # https://cli.github.com/manual/gh_release
+      - name: Create draft release via CLI
+        id: create_draft_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          gh release create "v${PYPROJECT_VERSION}-rc" \
+            --prerelease \
+            --target staging \
+            --generate-notes \
+            --title v${PYPROJECT_VERSION}-rc
+          echo "DRAFT_RELEASE_TAG=v${PYPROJECT_VERSION}-rc" >> $GITHUB_OUTPUT
+
+  tag_staging_image:
+    name: Tag Staging Image
+    needs: ["create_draft_release"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mock build run
+        run: echo "Image tagged for ${{ needs.create_draft_release.outputs.draft_release_tag }}"
+  
+  deploy_to_staging:
+    name: Deploy to Staging
+    needs: [
+      "create_draft_release",
+      "tag_staging_image"
+    ]
+    uses: ./.github/workflows/0_gke_deploy_workflow.yml
+    with:
+      environment: staging
+      image_tag: "${{ needs.create_draft_release.outputs.draft_release_tag }}"
+
+  create_main_pr:
+    name: Create main PR
+    needs: ["deploy_to_staging"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # https://cli.github.com/manual/gh_pr
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash {0}
+        run: |-
+          output=$(gh pr create --base main --head staging --title 'Auto PR' --body 'Auto PR test' 2>&1)
+          status=$?
+
+          if [ $status -ne 0 ]; then
+            if echo "$output" | grep -q "https://github.com/"; then
+              echo "$output"
+              exit 0
+            else
+              echo "$output"
+              exit $status
+            fi
+          else
+            echo "$output"
+          fi
