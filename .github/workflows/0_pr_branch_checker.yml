@@ -30,7 +30,7 @@ jobs:
             gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
           else
-            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge."
+            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge upon approval."
             gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
 
@@ -44,7 +44,7 @@ jobs:
             gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
           else
-            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge."
+            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge upon approval."
             gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
 
@@ -58,6 +58,6 @@ jobs:
             gh pr comment ${{ github.event.number }} --body "$ERROR_MESSAGE"
             exit 1
           else
-            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge."
+            MESSAGE="✅ PR between ${{ github.event.pull_request.base.ref }} and ${{ github.event.pull_request.head.ref }} valid to merge upon approval."
             gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
