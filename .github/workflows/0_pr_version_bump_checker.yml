@@ -32,8 +32,12 @@ jobs:
       - name: Compare versions
         run: |
           if [ "$LATEST_RELEASE_STRIPPED" = "$PYPROJECT_VERSION" ]; then
-            "Warning: version match - latest release is $LATEST_RELEASE_STRIPPED and pyproject version is $PYPROJECT_VERSION - please bump version in pyproject and commit."
+            WARN_MESSAGE="❗ Warning: version match - latest release is $LATEST_RELEASE_STRIPPED and pyproject version is $PYPROJECT_VERSION - please bump version in pyproject and commit."
+            echo $WARN_MESSAGE
+            gh pr comment ${{ github.event.number }} --body "$WARN_MESSAGE"
             exit 1
           else
-            echo "Versions do not match."
+            MESSAGE="✅ committed version and current release do not match - latest release is $LATEST_RELEASE_STRIPPED and pyproject version is $PYPROJECT_VERSION."
+            echo $MESSAGE
+            gh pr comment ${{ github.event.number }} --body "$MESSAGE"
           fi
