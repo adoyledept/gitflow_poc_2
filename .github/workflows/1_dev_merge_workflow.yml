@@ -1,4 +1,4 @@
-name: Develop Merge Workflow
+name: Dev Merge Workflow
 run-name: Build image, deploy to dev, and create staging PR
 
 on:
@@ -36,6 +36,7 @@ jobs:
       environment: dev
       image_tag: "${{ needs.build_base_image.outputs.short-sha }}"
 
+<<<<<<< Updated upstream
   create_staging_pr:
     name: Check and Create Staging PR
     needs: ["deploy_to_dev"]
@@ -57,15 +58,41 @@ jobs:
           
           GH_OUTPUT=$(gh pr create --base staging --head dev --title "$PR_TITLE" --body "$PR_BODY" 2>&1)
           GH_STATUS=$?
+=======
+>>>>>>> Stashed changes
 
-          if [ $GH_STATUS -ne 0 ]; then
-            if echo "$GH_OUTPUT" | grep -q "https://github.com/"; then
-              echo "$GH_OUTPUT"
-              exit 0
-            else
-              echo "$GH_OUTPUT"
-              exit $GH_STATUS
-            fi
-          else
-            echo "$GH_OUTPUT"
-          fi
+
+# I think I need to figure out how to trigger this as it's own workflow as a result of this entire workflow completing
+  # create_staging_pr:
+  #   name: Check and Create Staging PR
+  #   needs: ["deploy_to_dev"]
+  #   runs-on: ubuntu-latest
+  
+  #   steps:
+  #     - uses: actions/checkout@v4
+            
+  #     # https://cli.github.com/manual/gh_pr
+  #     - name: Create Standard Pull Request
+  #       env:
+  #         GH_TOKEN: ${{ github.token }}
+  #       shell: bash {0}
+  #       run: |-
+  #         PR_TITLE="🚀 Auto PR - staging ⬅️ dev - staging deployment and release candidate pending."
+  #         PR_BODY="❗ This PR has been automatically created as a result of code being merged into \`dev\`. \n
+  #         ❗ All subsequent code merged into dev will be appended to this PR. \n
+  #         ❗ This PR must be approved and closed to trigger a deploy to the `staging` environment, and to produce an release candidate tag."
+          
+  #         GH_OUTPUT=$(gh pr create --base staging --head dev --title $PR_TITLE --body $PR_BODY 2>&1)
+  #         GH_STATUS=$?
+
+  #         if [ $GH_STATUS -ne 0 ]; then
+  #           if echo "$GH_OUTPUT" | grep -q "https://github.com/"; then
+  #             echo "$GH_OUTPUT"
+  #             exit 0
+  #           else
+  #             echo "$GH_OUTPUT"
+  #             exit $GH_STATUS
+  #           fi
+  #         else
+  #           echo "$GH_OUTPUT"
+  #         fi
