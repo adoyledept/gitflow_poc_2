@@ -19,6 +19,11 @@ jobs:
     outputs: 
       draft_release_tag: ${{ steps.create_draft_release.outputs.DRAFT_RELEASE_TAG }}
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
       - uses: actions/checkout@v4
         with:
           ref: staging

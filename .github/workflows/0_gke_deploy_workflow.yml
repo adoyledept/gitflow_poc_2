@@ -29,5 +29,10 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
     - name: Mock deployment
       run: echo "The ${{ inputs.image_tag }} has been deployed to ${{ inputs.environment }}"
