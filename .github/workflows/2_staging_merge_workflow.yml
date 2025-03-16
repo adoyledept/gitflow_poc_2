@@ -85,13 +85,13 @@ jobs:
           ❗ All subsequent code merged into staging will be appended to this PR. \n
           ❗ This PR must be approved and closed to trigger a deploy to the `prod` environment, and to produce an release tag."
           
-          GH_OUTPUT=$(gh pr create --base staging --head dev --title $PR_TITLE --body $PR_BODY 2>&1)
+          GH_OUTPUT=$(gh pr create --base staging --head dev --title "$PR_TITLE" --body "$PR_BODY" 2>&1)
           GH_STATUS=$?
 
           if [ $GH_STATUS -ne 0 ]; then
             if echo "$GH_OUTPUT" | grep -q "https://github.com/"; then
               echo "PR appears to exist, attempting to update..."
-              
+
               exit 0
             else
               echo "$GH_OUTPUT"

@@ -55,7 +55,7 @@ jobs:
           ❗ All subsequent code merged into dev will be appended to this PR. \
           ❗ This PR must be approved and closed to trigger a deploy to the `staging` environment, and to produce an release candidate tag."
           
-          GH_OUTPUT=$(gh pr create --base staging --head dev --title $PR_TITLE --body $PR_BODY 2>&1)
+          GH_OUTPUT=$(gh pr create --base staging --head dev --title "$PR_TITLE" --body "$PR_BODY" 2>&1)
           GH_STATUS=$?
 
           if [ $GH_STATUS -ne 0 ]; then
