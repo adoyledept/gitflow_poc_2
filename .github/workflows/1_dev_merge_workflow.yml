@@ -50,17 +50,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash {0}
         run: |-
-          output=$(gh pr create --base staging --head dev --title 'Auto PR' --body 'Auto PR test' 2>&1)
-          status=$?
+          PR_TITLE="🚀 Auto PR - staging ⬅️ dev - staging deployment and release candidate pending."
+          PR_BODY="❗ This PR has been automatically created as a result of code being merged into `dev`. \
+          ❗ All subsequent code merged into dev will be appended to this PR. \
+          ❗ This PR must be approved and closed to trigger a deploy to the `staging` environment, and to produce an release candidate tag."
+          
+          GH_OUTPUT=$(gh pr create --base staging --head dev --title $PR_TITLE --body $PR_BODY 2>&1)
+          GH_STATUS=$?
 
-          if [ $status -ne 0 ]; then
-            if echo "$output" | grep -q "https://github.com/"; then
-              echo "$output"
+          if [ $GH_STATUS -ne 0 ]; then
+            if echo "$GH_OUTPUT" | grep -q "https://github.com/"; then
+              echo "$GH_OUTPUT"
               exit 0
             else
-              echo "$output"
-              exit $status
+              echo "$GH_OUTPUT"
+              exit $GH_STATUS
             fi
           else
-            echo "$output"
+            echo "$GH_OUTPUT"
           fi
