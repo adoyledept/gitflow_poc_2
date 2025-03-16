@@ -22,6 +22,11 @@ jobs:
   validate-pr:
     runs-on: ubuntu-latest
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
       # Needs to checkout to run gh cli commands
       - name: Checkout code
         uses: actions/checkout@v3

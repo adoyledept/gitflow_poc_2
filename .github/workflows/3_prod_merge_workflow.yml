@@ -19,6 +19,11 @@ jobs:
     outputs: 
       release_tag: ${{ steps.create_draft_release.outputs.RELEASE_TAG }}
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
       - uses: actions/checkout@v4
         with:
           ref: main

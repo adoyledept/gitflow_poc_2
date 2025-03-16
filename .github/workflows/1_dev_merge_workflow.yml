@@ -19,6 +19,11 @@ jobs:
     outputs: 
         short-sha: ${{ steps.get-short-sha.outputs.SHORT_SHA }}
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
       - name: Get short sha from triggering commit
         id: get-short-sha
         run: |-
