@@ -3,12 +3,12 @@ name: Validate Pull Request
 on:
   repository_dispatch:
     types: [create-pull-request]
-  workflow_run:
-    workflows: 
-      - "Dev Merge Workflow"
-      - "Staging Merge Workflow"
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: 
+  #     - "Dev Merge Workflow"
+  #     - "Staging Merge Workflow"
+  #   types:
+  #     - completed
   pull_request:
     branches:
       - main
