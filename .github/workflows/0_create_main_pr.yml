@@ -1,46 +1,46 @@
-on:
-  workflow_run:
-    workflows: 
-      - "Staging Merge Workflow"
-    types:
-      - completed
+# on:
+#   workflow_run:
+#     workflows: 
+#       - "Staging Merge Workflow"
+#     types:
+#       - completed
 
-jobs:
-  create_staging_pr:
-    name: Check and Create Staging PR
-    runs-on: ubuntu-latest
+# jobs:
+#   create_staging_pr:
+#     name: Check and Create Staging PR
+#     runs-on: ubuntu-latest
   
-    steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-      - uses: actions/checkout@v4
+#     steps:
+#       - name: Dump GitHub context
+#         env:
+#           GITHUB_CONTEXT: ${{ toJson(github) }}
+#         run: |
+#           echo "$GITHUB_CONTEXT"
+#       - uses: actions/checkout@v4
             
-      # https://cli.github.com/manual/gh_pr
-      - name: Create Standard Pull Request
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash {0}
-        run: |-
-          PR_TITLE="🚀 Auto PR - main ⬅️ staging - prod release and deployment pending."
-          PR_BODY="❗ This PR has been automatically created as a result of code being merged into \`staging\`.\n
-          ❗ This PR also represents a production release candidate.\n
-          ❗ All subsequent code merged into staging will be appended to this PR.\n
-          ❗ This PR must be approved and closed to trigger a deploy to the \`prod\` environment, and to produce an release tag."
+#       # https://cli.github.com/manual/gh_pr
+#       - name: Create Standard Pull Request
+#         env:
+#           GH_TOKEN: ${{ github.token }}
+#         shell: bash {0}
+#         run: |-
+#           PR_TITLE="🚀 Auto PR - main ⬅️ staging - prod release and deployment pending."
+#           PR_BODY="❗ This PR has been automatically created as a result of code being merged into \`staging\`.\n
+#           ❗ This PR also represents a production release candidate.\n
+#           ❗ All subsequent code merged into staging will be appended to this PR.\n
+#           ❗ This PR must be approved and closed to trigger a deploy to the \`prod\` environment, and to produce an release tag."
           
-          GH_OUTPUT=$(gh pr create --base main --head staging --title "$PR_TITLE" --body "$PR_BODY" 2>&1)
-          GH_STATUS=$?
+#           GH_OUTPUT=$(gh pr create --base main --head staging --title "$PR_TITLE" --body "$PR_BODY" 2>&1)
+#           GH_STATUS=$?
 
-          if [ $GH_STATUS -ne 0 ]; then
-            if echo "$GH_OUTPUT" | grep -q "https://github.com/"; then
-              echo "PR appears to exist, attempting to update..."
-              exit 0
-            else
-              echo "$GH_OUTPUT"
-              exit $GH_STATUS
-            fi
-          else
-            echo "$GH_OUTPUT"
-          fi
+#           if [ $GH_STATUS -ne 0 ]; then
+#             if echo "$GH_OUTPUT" | grep -q "https://github.com/"; then
+#               echo "PR appears to exist, attempting to update..."
+#               exit 0
+#             else
+#               echo "$GH_OUTPUT"
+#               exit $GH_STATUS
+#             fi
+#           else
+#             echo "$GH_OUTPUT"
+#           fi
